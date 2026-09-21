@@ -6,7 +6,32 @@ A personal portfolio project exploring C++ systems programming, Linux networking
 
 ## Status
 
-Planning and documentation only. No executable or implemented features yet. The next milestone is a minimal C++20 CMake project; setup and usage instructions will follow once the build is verified.
+A minimal C++20 executable builds on macOS and prints the project name. Packet analysis, routing, and telemetry are planned features.
+
+## Build and run
+
+Requires CMake 3.20 or newer and a C++20-capable compiler. Run these commands from the project root:
+
+```sh
+# Configure a Debug build (first-time setup)
+cmake -S . -B build -DCMAKE_BUILD_TYPE=Debug
+
+# Compile and link
+cmake --build build
+
+# Run the executable
+./build/netroute
+```
+
+The configure command reads `CMakeLists.txt`, saves build settings in `build/`, and enables a Debug build for debugging. It does not compile the code.
+
+After editing source files, rebuild and run:
+
+```sh
+cmake --build build && ./build/netroute
+```
+
+`&&` runs the executable only if the build succeeds. Configure again when creating a fresh build directory, building on another machine, or changing build options. Changes to `CMakeLists.txt` normally trigger automatic reconfiguration during the build.
 
 ## Roadmap
 
@@ -19,7 +44,7 @@ Planning and documentation only. No executable or implemented features yet. The 
 
 ## Target platform
 
-Raspberry Pi 4 Model B (8 GB), running Debian 13 on ARM64. Development is planned through VS Code Remote SSH, using C++20, CMake, and libpcap.
+Raspberry Pi 4 Model B (8 GB), running Debian 13 on ARM64. Portable components are developed on macOS and will be built separately on the Pi. Linux networking integration will be developed and tested on the Pi through VS Code Remote SSH. The planned stack includes C++20, CMake, and libpcap.
 
 ## Planned deployment
 
