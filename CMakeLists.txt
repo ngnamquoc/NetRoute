@@ -19,3 +19,9 @@ if(CMAKE_CXX_COMPILER_ID MATCHES "Clang|GNU")
         -Wpedantic
     )
 endif()
+
+find_path(PCAP_INCLUDE_DIR NAMES pcap/pcap.h REQUIRED)
+find_library(PCAP_LIBRARY NAMES pcap REQUIRED)
+
+target_include_directories(netroute PRIVATE "${PCAP_INCLUDE_DIR}")
+target_link_libraries(netroute PRIVATE "${PCAP_LIBRARY}")
