@@ -5,6 +5,7 @@
 #include "ethernet.hpp"
 #include <cstdint>
 #include <iomanip>
+#include "ipv4.hpp"
 /** takes a 6 bytes MAC address arr (e.g. {0x00, 0x1A, 0x2B, 0x03, 0x04, 0xFF})
  * and prints it in the standard MAC address format (e.g. 00:1a:2b:03:04:ff)
  */
@@ -46,6 +47,40 @@ void print_ethernet(const EthernetHeader &header)
 
     std::cout.flags(previous_flags);
     std::cout.fill(previous_fill);
+}
+
+void print_ipv4_address(
+    const std::array<unsigned char, 4> &address)
+{
+    for (std::size_t i = 0; i < address.size(); ++i)
+    {
+        if (i != 0)
+        {
+            std::cout << '.';
+        }
+
+        std::cout << static_cast<unsigned int>(address[i]);
+    }
+}
+
+void print_ipv4(const IPv4Header &header)
+{
+    std::cout << "  Source IP: ";
+    print_ipv4_address(header.source);
+
+    std::cout << "\n  Destination IP: ";
+    print_ipv4_address(header.destination);
+
+    std::cout << "\n  Header length: "
+              << static_cast<unsigned int>(header.header_length)
+              << " bytes"
+              << "\n  Total length: " << header.total_length
+              << " bytes"
+              << "\n  TTL: "
+              << static_cast<unsigned int>(header.ttl)
+              << "\n  Protocol: "
+              << static_cast<unsigned int>(header.protocol)
+              << '\n';
 }
 
 /** opens a capture file, reads one packet record at a time
@@ -99,6 +134,34 @@ std::uint64_t inspect_capture(const char *path)
             }
 
             print_ethernet(*ethernet); //*ethernet accesses the successfully parsed header
+
+            constexpr std::uint16_t ipv4_ether_type = 0x0800;
+
+            if (ethernet->type_or_length != ipv4_ether_type)
+            {
+                std::cout << "  Skipping: not a directly carried IPv4 packet\n";
+                continue;
+            }
+
+            constexpr std::size_t ethernet_header_size = 14;
+
+            // View the bytes after the Ethernet header without copying them.
+            const auto ip_packet = packet.subspan(ethernet_header_size);
+
+            const auto ipv4 = parse_ipv4(ip_packet);
+
+            if (!ipv4)
+            {
+                std::cout << "  Invalid or truncated IPv4 header\n";
+                continue;
+            }
+
+            print_ipv4(*ipv4);
+
+            if (ip_packet.size() < ipv4->total_length)
+            {
+                std::cout << "  IPv4 payload is truncated in this capture\n";
+            }
         }
         else if (result == PCAP_ERROR_BREAK)
         {

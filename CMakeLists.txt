@@ -5,6 +5,7 @@ project(NetRoute VERSION 0.1.0 LANGUAGES CXX)
 add_executable(netroute
     src/main.cpp
     src/ethernet.cpp
+    src/ipv4.cpp
 )
 
 set_target_properties(netroute PROPERTIES
